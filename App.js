@@ -1,21 +1,87 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, {Component} from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import * as firebase from 'firebase';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+import LandingScreen from './components/auth/Landing';
+import RegisterScreen from './components/auth/Register';
+import LoginScreen from './components/auth/Login';
+
+const Stack = createStackNavigator();
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB0f-Gh-XRwq_GDgmLAN7nBztNjrXL-NZY",
+  authDomain: "intagram-demo-8bd6f.firebaseapp.com",
+  projectId: "intagram-demo-8bd6f",
+  storageBucket: "intagram-demo-8bd6f.appspot.com",
+  messagingSenderId: "560353458339",
+  appId: "1:560353458339:web:fa0da5f98868e285b8a716"
+};
+
+console.log(firebase.app.length);
+
+// firebase.initializeApp(firebaseConfig);
+if(firebase.app.length === 0){
+  firebase.initializeApp(firebaseConfig);
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export class App extends Component {
+
+  constructor(props){
+    super(props);
+
+    this.state = {
+      loaded: false
+    }
+  }
+
+  componentDidMount() {
+    firebase.auth().onAuthStateChanged((user) => {
+      if(!user){
+        this.setState({
+          loaded: true,
+          loggedIn: false
+        })
+      }
+      else{
+        this.setState({
+          loaded: true,
+          loggedIn: true
+        })
+      }
+    })
+  }
+
+  render() {
+    const {loaded, loggedIn } = this.state;
+    if(!loaded){
+      return(
+        <View style = {{ flex: 1, justifyContent: 'center' }}> 
+          <Text> App is loading ... </Text>
+        </View>
+      );
+    }
+    if(!loggedIn){
+      return (
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Landing">
+            <Stack.Screen name="Landing" component={LandingScreen} options={{headerShown: false}}/>
+            <Stack.Screen name="Register" component={RegisterScreen}/>
+            <Stack.Screen name="Login" component={LoginScreen}/>
+          </Stack.Navigator>
+        </NavigationContainer>
+      );
+    }
+    else{
+      return(
+        <View style = {{ flex: 1, justifyContent: 'center' }}> 
+          <Text> User is already logged in </Text>
+        </View>
+      );
+    }
+  }
+}
+
+export default App
