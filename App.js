@@ -4,12 +4,20 @@ import { StyleSheet, Text, View } from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import * as firebase from 'firebase';
+import { Provider } from 'react-redux';
+import {createStore, applyMiddleware} from 'redux';
+import thunk from 'redux-thunk'
 
 import LandingScreen from './components/auth/Landing';
 import RegisterScreen from './components/auth/Register';
 import LoginScreen from './components/auth/Login';
+import rootReducer from './redux/reducers';
+import MainScreen from './components/Main';
+import AddScreen from './components/main/Add';
+import SaveScreen from './components/main/Save';
 
 const Stack = createStackNavigator();
+const store = createStore(rootReducer, applyMiddleware(thunk));
 
 const firebaseConfig = {
   apiKey: "AIzaSyB0f-Gh-XRwq_GDgmLAN7nBztNjrXL-NZY",
@@ -76,9 +84,15 @@ export class App extends Component {
     }
     else{
       return(
-        <View style = {{ flex: 1, justifyContent: 'center' }}> 
-          <Text> User is already logged in </Text>
-        </View>
+        <Provider store={store}>
+          <NavigationContainer>
+            <Stack.Navigator initialRouteName="Main">
+              <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}}/>
+              <Stack.Screen name="Add" component={AddScreen} navigation = {this.props.navigation}/>
+              <Stack.Screen name="Save" component={SaveScreen}/>
+            </Stack.Navigator>
+          </NavigationContainer>
+        </Provider>
       );
     }
   }
